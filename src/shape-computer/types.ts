@@ -27,12 +27,11 @@ export type Node = {
 };
 
 export type Connection = {
-    id: string;
-    from: string;
-    to: string; 
-    // target port: "A"(top) or "B"(bottom)
-    targetPort?: "A" | "B";
-};
+  id: string
+  from: string
+  to: string
+  port?: "A" | "B" | "in"
+}
 
 export type Program = { nodes: Node[]; conns : Connection[]};
 
