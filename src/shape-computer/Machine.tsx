@@ -46,7 +46,8 @@ export function Machine() {
   const delConn = (id: string) => setProg((s) => ({ ...s, conns: s.conns.filter((c) => c.id !== id) }));
   const link = (from: string, to: string, port?: "A" | "B") =>
     setProg((s) => {
-      // Each input port acccepts only one conn, so remove the curent conn to taht port before adding the new one
+      // Each input port acccepts only one conn, 
+      //  so remove the curent conn to taht port before adding the new one
 
       const filtered = s.conns.filter((c) =>
         c.to===to ? (port ? c.port !== port : false) : true
