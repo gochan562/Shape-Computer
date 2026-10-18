@@ -315,4 +315,95 @@
     color: var(--mc-err);
     font-weight: 600;
 } 
-/* DONT FORGET TO COMMit tHIS AND DELETE THIS MESSAGE */
+
+/*editorr */
+
+.mc-edit {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.76);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+}
+.mc-edit-form {
+    background: #0e130f;
+    border: 1px solid #46513c;
+
+    width: 320px;
+    max-width: calc(100vw - 32px);
+    box-shadow: 4px 4px 0 #020402;
+}
+
+.mc-edit-hdr{
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: #b5c39d;
+    padding: 8px 12px;
+    background: #151d14;
+    border-bottom: 1px solid #354333;
+
+}
+
+.mc-edit-row {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--mc-line);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.mc-edit-row label {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    color: var(--mc-fg-faint);
+}
+.mc-edit-types {
+    display: flex;
+    gap: 4px;
+}
+
+.mc-edit-type {
+    flex: 1;
+    padding: 5px;
+    background: var(--mc-bg);
+    border: 1px solid var(--mc-line);
+    color: var(--mc-fg-dim);
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    border-radius: 0;
+
+}
+
+.mc-edit-type:hover{
+    background: #172017;
+    color: var(--mc-fg);
+}
+.mc-edit-type.is-on {
+    background: #202a1c;
+    border-color: var(--mc-go);
+    color: #e2e9d5;
+}
+
+.mc-edit-input {
+    background: var(--mc-bg);
+    border: 1px solid #354333;
+    padding: 6px 8px;
+    color: var(--mc-fg);
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+    border-radius: 0;
+}
+.mc-edit-input:focus{
+    border-color: var(--mc-go);
+
+}
+
+.mc-edit-foot {
+    padding: 8px 12px;
+    display: flex;
+    justify-content: flex-end;
+}
