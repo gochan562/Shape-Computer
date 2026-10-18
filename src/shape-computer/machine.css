@@ -275,3 +275,44 @@
     pointer-events: none;
 }
 
+/* outputs */
+
+.mc-out {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 32px;
+    padding: 0 12px;
+    border-top: 1px solid #46513c;
+    background: #000000;
+    font-size: 11px;
+    flex-shrink: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+.mc-out-prompt{
+    color: var(--mc-go);
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.mc-out-empty{
+    color: var(--mc-fg-faint);
+}
+
+.mc-out-val {
+    font-weight: 500;
+}
+.mc-out-val::before{
+    content:"=>";
+    color: var(--mc-go);
+}
+.mc-out-val::after{
+    content:"";
+}
+
+.mc-out-err{
+    color: var(--mc-err);
+    font-weight: 600;
+} 
+/* DONT FORGET TO COMMit tHIS AND DELETE THIS MESSAGE */
