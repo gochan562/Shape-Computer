@@ -1,32 +1,26 @@
-# React + TypeScript + Vite
+# Shape Computer
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+This is a visual node-based computer. It's supposed to be an emulator of some kind, but I found that making it from scratch is pretty hard.
 
-Currently, two official plugins are available:
+## feature
+- visual canvas for working with nodes and connections
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+It's just a calculator atp :(
 
-## React Compiler
+## how to run it (just in case)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Download the whole thing and run
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```
+bun install
+bun run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## others (for reviewers)
+- **AI declaration**
+
+some code in Machine.tsx was written with assistance from VSCode's inline suggestion AI. Although Hackatime isn't showing it as "AI Coding" time.
+
+- **How I'm supposed to make this an Emulator in the future???**
+
+My next plan is to add persistent memory, runtime, tick/update loop, conditions, external input, and a few more output capabilities. It's still a visual programming language then 助けて... CPU implementation and runnable programs will be added in the future tho.
