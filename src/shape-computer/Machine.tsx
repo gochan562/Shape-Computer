@@ -188,7 +188,6 @@ export function Machine() {
     <div className="mc">
       <header className="mc-bar">
         <span className="mc-title">SHAPE COMPUTER</span>
-        <span className="mc-meta">prototype v0.1</span>
         <span className= "mc-spacer" />
 
         {DEMOS.map((d) => (
@@ -238,9 +237,7 @@ export function Machine() {
             }}
           >
             <defs>
-              <pattern id= "mc-grid" width="24" height="24" patternUnits="userSpaceOnUse">
-                <circle cx="0.5" cy="0.5" r="0.6" fill="#1a2433" />
-              </pattern>
+
               <marker id="mc-arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
                 <path d="M0,0 L6,3 L0,6 z" fill={COLOR.conn} />
               </marker>
@@ -248,9 +245,7 @@ export function Machine() {
                 <path d= "M0,0 L6,3 L0,6 z" fill={COLOR.connActive} />
               </marker>
             </defs>
-
-            <rect width = "100%" height="100%" fill="url(#mc-grid)" />
-
+            
             {/* connections */}
             {prog.conns.map((c) => {
               const f = prog.nodes.find((n) => n.id === c.from);

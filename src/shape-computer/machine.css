@@ -2,7 +2,7 @@
 
 /* cool colors hr (gives a terminal Vibe)*/
 :root {
-    
+
   --mc-bg: #000000;
   --mc-bg2: #101510;
   --mc-line: #2a382c;
@@ -37,7 +37,7 @@
     display:flex;
     align-items:center;
     gap: 6px;
-    height: 32px;
+    height: 55px;
     padding: 0 8px;
     border-bottom: 1px solid var(--mc-line);
     background: var(--mc-bg2);
@@ -45,16 +45,12 @@
 }
 
 .mc-title{
-    font-size: 11px;
+    font-size: 15px;
     font-weight: 700;
     letter-spacing: 0.08em;
     color: var(--mc-fg);
 }
-.mc-meta {
-  font-size: 9px;
-  color: var(--mc-fg-faint);
-  letter-spacing: 0.04em;
-}
+
 
 .mc-spacer {
     flex:1;
@@ -62,11 +58,11 @@
 
 .mc-btn{
     font-family: inherit;
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 0.04em;
-    padding: 4px 8px;
+    padding: 8px 12px;
     background: transparent;
-    border: 1px solid var(--mc-line) ;
+    border: 2px solid var(--mc-line) ;
     color: var(--mc-fg-dim);
     cursor: pointer;
     border-radius: 0;
@@ -123,7 +119,7 @@
     flex-shrink: 0;
 }
 .mc-side-hdr{
-    font-size: 9px;
+    font-size: 11px;
     letter-spacing: 0.12em;
     color: var(--mc-fg-faint);
     padding: 8px 8px 6px;
@@ -179,7 +175,7 @@
 
 }
 .mc-leg {
-    font-size: 9px;
+    font-size: 11px;
     color: var(--mc-fg-faint);
     letter-spacing: 0.1em;
     display: flex;
@@ -269,7 +265,7 @@
 
 .mc-label-sm {
     font-family: ui-monospace,monospace;
-    font-size: 8px;
+    font-size: 10px;
     letter-spacing: 0.08em;
     font-weight: 600;
     pointer-events: none;
@@ -281,7 +277,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    height: 32px;
+    height: 80px;
     padding: 0 12px;
     border-top: 1px solid var(--mc-line);
     background: var(--mc-bg);
@@ -354,7 +350,7 @@
     gap: 6px;
 }
 .mc-edit-row label {
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 0.08em;
     color: var(--mc-fg-faint);
 }
