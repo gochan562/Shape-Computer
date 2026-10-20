@@ -39,7 +39,7 @@ export const DEMOS: Demo[] = [
     {
         id: "comp", name: "2x(3+4)", program: {
             nodes: [
-                { id: "a3", kind: "value", x: 80, y: 120, value:{valueType: "int", value: 4}},
+                { id: "a3", kind: "value", x: 80, y: 120, value:{valueType: "int", value: 3}},
                 {id: "a4", kind: "value", x: 80, y: 280, value: { valueType: "int", value: 4 } },
                 { id: "add", kind:"operator", x: 260, y: 200,  op: "add"},
                 { id: "m2", kind: "value", x: 260, y: 360, value: { valueType: "int", value: 2 } },
