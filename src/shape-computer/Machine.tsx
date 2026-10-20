@@ -378,7 +378,7 @@ export function Machine() {
       {/* style */}
       <footer className="mc-out">
         <span className="mc-out-prompt">OUTPUT&gt;</span>
-        {outs.length === 0 && errs.length === 0 && <span className="mc-out-empty">{running ? "executing…" : "—"}</span>}
+        {outs.length === 0 && errs.length === 0 && <span className="mc-out-empty">{running ? "executing…" : "-"}</span>}
         {outs.map((o, i) => (
           <span key={i} className="mc-out-val" style={{ color: COLOR[o.valueType] }}>{fmt(o)}</span>
         ))}
