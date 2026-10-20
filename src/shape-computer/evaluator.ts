@@ -1,13 +1,4 @@
-// Shape Computer Graph Evaluator
-// (Future: Program Graph -> Compiler -> Virtural CPU. not yet implemented)
-
-// Algorithm:
-// 1. seed value/list nodes
-// 2. propagate through connections
-// 3. evaluate with a binary op has both inputs
-// 4. produce output value
-
-import type { Connection, Ev, Node, Program, Result, Value} from "./types";
+import type { Ev, Node, Program, Result, Value} from "./types";
 
 const num = (v?: Value): v is Value & { value: number} =>
     !!v && (v.valueType === "int" || v.valueType === "number");
@@ -82,11 +73,7 @@ export function evaluate(p: Program): Result {
     }
     const nodeById = new Map(p.nodes.map((n) => [n.id, n]));
     const out = (id:string) => p.conns.filter((c) => c.from === id);
-    const inP = (id: string, port: "A"|"B"|"in") =>
-        p.conns.find(
-            (c) =>
-                c.to === id && (port === "in" ? !c.port : c.port === port)
-        );
+
 
     const valAt : Record<string, Value> = {};
     const done: Record<string, boolean> = {};

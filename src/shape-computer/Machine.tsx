@@ -83,7 +83,7 @@ export function Machine() {
     if (!r.evs.length) { setRunning(false); if (r.errs.length) setErrs(r.errs); return; }
     let i = 0;
     const aN = new Set<string>(), aC = new Set<string>();
-    const prod  = {};
+    const prod: Record<string, Value> = {};
     const tick =() => {
       if (i >= r.evs.length) {
         setRunning(false); setActiveNodes(new Set()); setActiveConns(new Set());
