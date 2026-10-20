@@ -24,3 +24,5 @@ some code in Machine.tsx was written with assistance from VSCode's inline sugges
 - **How I'm supposed to make this an Emulator in the future???**
 
 My next plan is to add persistent memory, runtime, tick/update loop, conditions, external input, and a few more output capabilities. It's still a visual programming language then 助けて... CPU implementation and runnable programs will be added in the future tho.
+
+### I configured my user name!!! so it's not "zubeiyang" anymore!!! (all still me tho)
