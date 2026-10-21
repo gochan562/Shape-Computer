@@ -33,6 +33,9 @@ function apply(op: string, a:Value, b:Value):{ok:true; v: Value} | {ok:false; ms
         const clean = x%y===0&&bothInt;
         return {ok: true, v: {valueType: clean ? "int" : "number", value: clean ? Math.round(d) : d}};
     }
+    if (op === "lt") return {ok: true, v: {valueType: "int", value: x<y ? 1 :0}};
+    if (op === "gt") return {ok: true, v: {valueType: "int", value: x>y ? 1 : 0}};
+    if (op === "eq") return {ok: true, v: {valueType: "int", value: x === y ? 1 : 0}};
     return {ok: false, msg: "ERROR: UNKNOWN OPERATOR"};
 }
 
@@ -61,7 +64,10 @@ export function evaluate(p: Program): Result {
     const outs: Value[] = [];
     const errs: string[] = [];
     const produced: Record<string,Value> = {};
-    if (!p.nodes.length) return {evs, outs, errs, produced};
+    const writes: Result["writes"] = [];
+    const displays: Result["displays"] = [];
+    let xy : Result["xy"] = null;
+    if (!p.nodes.length) return {evs, outs, errs, produced, writes, displays, xy};
 
     // cycle check
     const cyc = hasCycle(p);
@@ -69,11 +75,11 @@ export function evaluate(p: Program): Result {
         const m = "ERROR: CIRCULAR DEPENDENCY";
         evs.push({type: "err", msg: m, id: cyc[0]});
         errs.push(m);
-        return {evs, outs, errs, produced};
+        return {evs, outs, errs, produced, writes, displays, xy};
     }
     const nodeById = new Map(p.nodes.map((n) => [n.id, n]));
     const out = (id:string) => p.conns.filter((c) => c.from === id);
-
+    void inP;
 
     const valAt : Record<string, Value> = {};
     const done: Record<string, boolean> = {};
@@ -82,12 +88,7 @@ export function evaluate(p: Program): Result {
 
     // seed
     for (const n of p.nodes) {
-        if (n.kind === "value" && n.value) {
-            valAt[n.id] = n.value;
-            done[n.id] = true;
-            q.push(n.id);
-        }
-        if (n.kind === "list" && n.value) {
+        if ((n.kind === "value" || n.kind === "list" || n.kind === "read" || n.kind === "key") && n.value){
             valAt[n.id] = n.value;
             done[n.id] = true;
             q.push(n.id);
@@ -112,7 +113,7 @@ export function evaluate(p: Program): Result {
                     if ("msg" in r) {
                         evs.push({ type: "err", msg: r.msg, id: t.id });
                         errs.push(r.msg);
-                        return { evs, outs, errs, produced };
+                        return { evs, outs, errs, produced, writes, displays, xy };
                     }
 
                     valAt[t.id] = r.v;
@@ -121,11 +122,40 @@ export function evaluate(p: Program): Result {
                     produced[t.id] = r.v;
                     q.push(t.id);
                 }
+            } else if (t.kind === "if" && !done[t.id]) {
+                const ps = ports[t.id];
+                if (ps.in !== undefined && ps.A !== undefined && ps.B !== undefined) {
+                    const c = num(ps.in) ? asNum(ps.in) : 0;
+                    const result = c !== 0 ? ps.A : ps.B;
+                    valAt[t.id] = result;
+                    done[t.id] = true;
+                    evs.push({ type: "produce", id: t.id, value: result});
+                    produced[t.id] = result;
+                    q.push(t.id)
+                }
             } else if (t.kind === "print" && !done[t.id]) {
                 done[t.id] = true;
                 const v = ports[t.id].in!;
                 evs.push({type: "out", value: v});
                 outs.push(v);
+            } else if (t.kind === "write" && !done[t.id]) {
+                done[t.id] = true;
+                const v = ports[t.id].in!;
+                evs.push({type: "write", name: t.name ?? "_", value: v});
+                writes.push({name: t.name ?? "_", value: v});
+            }else if (t.kind === "display" && !done[t.id]) {
+                done[t.id] = true;
+                const v = ports[t.id].in!;
+                evs.push({type: "display", name: t.name ?? "_", value: v});
+                displays.push({name: t.name ?? "_", value: v});
+            } else if (t.kind === "xy" && !done[t.id]){
+                const ps = ports[t.id];
+                if (ps.A !== undefined && ps.B !== undefined && num(ps.A) && num(ps.B)) {
+                    done[t.id] = true;
+                    const x = asNum(ps.A), y = asNum(ps.B)
+                    evs.push( {type: "xy", x, y});
+                    xy = {x,y};
+                }
             } else if (t.kind === "list" && !done[t.id]) {
                 // list as pass-through, just propagate value
                 done[t.id] = true;
@@ -146,9 +176,33 @@ export function evaluate(p: Program): Result {
             evs.push({type: "err", msg: m, id: n.id});
             errs.push(m);
         }
+        if (n.kind === "if" && !done[n.id]){
+            const ps = ports[n.id] ?? {};
+            const have = [ps.in !== undefined, ps.A !== undefined, ps.B !== undefined].filter(Boolean).length;
+            const m = `ERROR: IF - waiting for ${3-have} inputs`;
+            evs.push({type: "err", msg: m, id: n.id});
+            errs.push(m);
+        }
+        if ((n.kind === "write" || n.kind === "display") && !done[n.id]){
+            const m = `ERROR: ${n.kind.toUpperCase()}- no input`;
+            evs.push({type: "err", msg : m, id: n.id});
+            errs.push(m);
+        }
+        if (n.kind === "xy" && !done[n.id]) {
+            const ps = ports[n.id] ?? {};
+            const missing = !ps.A && !ps.B ? "2 inputs":"1 input";
+            const m = `ERROR: XY - waiting for ${missing}`;
+            evs.push({type: "err", msg: m, id: n.id});
+            errs.push(m);
+        }
+        // just in casse
+        if ((n.kind === "read" || n.kind === "key") && !done[n.id]) {
+        }
     }
-    return {evs, outs, errs, produced};
+    return {evs, outs, errs, produced, writes, displays, xy};
 }
+
+function inP(_p: Program, _id: string, _port: "A"|"B"|"in"): Connection | undefined { return undefined;}
 
 // tiny helpers shared with UI
 
@@ -175,18 +229,39 @@ export const COLOR = {
     op:"#cbd5e1",
     conn:"#475569",
     connActive:"#e2e8f0",
+    read: "#facc15",
+    write:"#f97316",
+    key:"#22d3ee",
+    if:"#e879f9",
+    display:"#a3e635",
+    xy:"#fb7185",
 };
 
 //port positions for node
 export function port(n: Node, p: "A" | "B" | "in" | "out"): { x: number; y: number } {
-    if (n.kind === "value") {const r = dia(n.value) / 2; return p === "out" ? { x: n.x + r, y: n.y } : { x: n.x, y: n.y };}
+    if (n.kind === "value" || n.kind=== "read" || n.kind === "key" ) {
+        const r = dia(n.value) / 2; 
+        return p === "out" ? { x: n.x + r, y: n.y } : { x: n.x, y: n.y };}
     if (n.kind === "operator"){
         const h = 28;
         if (p === "A") return {x: n.x, y: n.y - h};
         if (p === "B") return {x: n.x, y: n.y + h};
         return {x: n.x + h, y: n.y};
     }
-    if (n.kind === "print" || n.kind === "list") {
+    if (n.kind === "if"){
+        const h = 32;
+        if (p === "in") return {x: n.x - h, y: n.y};
+        if (p === "A") return {x: n.x, y: n.y-h};
+        if (p === "B") return {x: n.x, y: n.y+h};
+        return {x: n.x + h, y: n.y};
+    }
+    if (n.kind === "xy") {
+        const h = 28;
+        if (p === "A") return {x: n.x, y: n.y - h};
+        if (p === "B") return {x: n.x, y: n.y + h};
+        return {x: n.x, y: n.y};
+    }
+    if (n.kind === "print" || n.kind === "list" || n.kind === "write" || n.kind === "display") {
         const h = 32;
         if (p === "in") return {x: n.x - h, y: n.y};
         if (p === "out") return {x: n.x + h, y: n.y};
@@ -220,3 +295,6 @@ export const star = (points: number, outer: number, inner: number, rot = -Math.P
     const a = rot + (i * Math.PI) / points;
     return `${(r * Math.cos(a)).toFixed(1)},${(r * Math.sin(a)).toFixed(1)}`;
   }).join(" ");
+
+export const diamond = (r: number): string =>
+    `0,${-r} ${r},0 0,${r} ${-r},0`;

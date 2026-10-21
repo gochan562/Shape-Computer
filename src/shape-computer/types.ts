@@ -57,6 +57,6 @@ export type Result = {
     errs : string[];
     produced: Record<string, Value>; //map of node id to produced value
     writes: Array<{name: string; value: Value}>;
-    displays: Array<{ name: string; value: Value}>
+    displays: Array<{ name: string; value: Value}>;
     xy: { x:number; y: number} | null;
 };
