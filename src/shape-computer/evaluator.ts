@@ -1,4 +1,4 @@
-import type { Ev, Node, Program, Result, Value} from "./types";
+import type { Connection, Ev, Node, Program, Result, Value} from "./types";
 
 const num = (v?: Value): v is Value & { value: number} =>
     !!v && (v.valueType === "int" || v.valueType === "number");
