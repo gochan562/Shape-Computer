@@ -186,6 +186,24 @@ export const DEMOS: Demo[] = [
                 {id: "ry3", kind: "read", name: "y", x:780, y:660},
                 {id: "xy", kind: "xy", x:960, y:440},
             ],
-        }
-    }
+            conns: [
+                { id: "c1", from:"rx", to: "ax", port:"A"},
+                {id: "c2", from:"kr", to:"ax", port:"B"},
+                {id: "c3", from:"kl", to:"ml", port:"A"},
+                {id: "c4", from:"neg1", to:"ml", port:"B"},
+                {id: "c5", from:"ax",to:"ax2", port:"A"},
+                {id: "c6", from: "ml", to: "ax2", port: "B"},
+                {id: "c7", from: "ax2", to: "wx"},
+                {id: "c8", from: "ry", to: "ay", port:"A"},
+                {id: "c9", from: "kd", to: "ay", port:"B"},
+                {id: "c10", from: "ku", to: "mly", port:"A"},
+                {id: "c11", from: "neg1y", to: "mly", port:"B"},
+                {id: "c12", from: "ay", to: "ay2", port:"A"},
+                {id: "c13", from: "mly", to: "ay2", port:"B"},
+                {id: "c14", from: "ay2", to: "wy"},
+                {id: "c15", from: "rx3", to: "xy", port:"A"},
+                {id: "c16", from: "ry3", to: "xy", port:"B"},
+            ]
+        },
+    },
 ];
