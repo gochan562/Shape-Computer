@@ -79,4 +79,54 @@ export const DEMOS: Demo[] = [
             conns: [{id: "c1", from:"l",to:"o"}],
         },
     },
+
+    //new ones!!! (same, boring but bettter)
+    // simple conter/ key detect / bounce / move
+    {
+        id: "counter", name: "counter", program: {
+            nodes: [
+                {id: "rx", kind: "read", name: "x", x:100, y:200},
+                {id: "one", kind : "value", x: 100, y: 320, value: {valueType:"int", value:1}},
+                {id: "add", kind: "value", x:280,y:260, op:"add"},
+                {id: "wx", kind: "write", name:"x", x:460, y:260},
+                {id: "rx2", kind: "read", name:"x", x:100, y:420},
+                {id: "dx", kind: "display", name: "x", x:280, y:420},
+
+            ],
+            conns: [
+                {id: "c1", from: "rx", to: "add", port:"A"},
+                {id: "c2", from:"one", to:"add", port:"B"},
+                {id: "c3", from: "add", to: "wx"},
+                {id: "c4", from: "rx2", to: "dx"},
+            ],
+        },
+    },
+
+    {
+        id: "keymove", name: "keymove", program:{
+            nodes:[
+                {id: "rx", kind: "read", name: "x", x:100, y:200},
+                {id: "kr", kind: "key", name: "RIGHT", x:100, y:320},
+                {id: "add", kind: "operator", x:280, y:260, op:"add"},
+                {id: "kl", kind: "key", name:"LEFT", x:280, y:380},
+                { id: "neg", kind: "value", x:280, y:460, value: {valueType: "int", value: -1}},
+                {id: "mlt", kind: "operator", x:460, y:420, op:"multiply"},
+                {id:"add2", kind: "operator", x:640, y:320, op: "add"},
+                { id: "wx", kind: "write", name: "x", x:820, y:320},
+                {id: "rx2",  kind: "read",name: "x", x: 640, y: 200 },
+                { id: "dx", kind: "display", name: "x", x:820, y:200}, // btw display is NOT output. output uses print.
+                
+            ],
+            conns: [
+                {id: "c1", from: "rx", to: "add", port: "A"},
+                {id: "c2", from: "kr", to : "add", port: "B"},
+                {id: "c3", from: "kl", to:"mlt", port:"A"},
+                {id: "c4", from: "neg", to: "mlt", port:"B"},
+                {id: "c5", from: "add", to: "add2", port: "A"},
+                {id: "c6", from: "mlt", to: "add2", port: "B"},
+                {id: "c7", from: "add2", to: "wx"},
+                {id: "c8", from: "rx2", to: "dx"},
+            ]
+        },
+    },
 ];
