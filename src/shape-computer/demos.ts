@@ -129,4 +129,63 @@ export const DEMOS: Demo[] = [
             ]
         },
     },
+    {
+
+        id: "bounce", name: "bounce", program: {
+            nodes: [
+                { id: "rx", kind: "read", name: "x", x:80, y:200},
+                {id: "lim", kind: "value", x:80, y:320, value: {valueType: "int", value:5}},
+                {id: "cmp", kind: "operator", x:260, y:260, op: "gt"},
+                {id: "zero", kind: "value", x:260, y:120, value: {valueType: "int", value: 0}},
+                {id: "one", kind: "value", x:80, y:420, value: {valueType: "int", value:1}},
+                {id: "inc", kind: "operator", x:260, y:420, op: "add"},
+                {id: "ifx", kind: "if", x:460, y:260},
+                {id: "wx", kind: "write", name: "x", x:640, y:260},
+                {id: "rx2", kind: "read", name: "x", x:640, y:140},
+                {id: "dx", kind: "display", name: "x", x:820, y:140},
+
+            ],
+
+            conns:[
+                {id: "c1", from: "rx", to: "cmp", port: "A"},
+                {id: "c2", from: "lim", to: "cmp", port: "B"},
+                {id: "c3", from: "rx", to :"inc", port:"A"},
+                {id: "c4", from: "one", to: "inc", port: "B"},
+                {id: "c5", from: "cmp" ,to: "ifx"},
+                {id: "c6", from: "zero", to: "ifx", port: "A"},
+                {id: "c7", from: "inc", to: "ifx", port: "B"},
+                {id: "c8", from: "ifx", to: "wx"},
+                {id: "c9", from: "rx2", to: "dx"},
+            ],
+        },
+    },
+    //Here coms the big one...
+    {
+        id: "move", name: "move", program: {
+            nodes: [
+                // x is x+ right - left? maybe
+                {id: "rx", kind: "read", name: "x", x:60, y:80},
+                {id: "kr", kind: "key", name: "RIGHT", x:60, y:200},
+                {id: "kl", kind: "key", name: "LEFT", x:60, y: 320},
+                {id: "neg1", kind: "value", x:60, y:420, value :{valueType: "int", value: -1}},
+                {id: "ax", kind: "operator", x:240, y: 140, op: "add"},
+                {id: "ml", kind: "operator", x:240, y:320, op: "multiply"},
+                {id: "ax2", kind: "operator", x:420, y:220, op: "add"},
+                {id: "wx", kind: "write", name:"x", x:600, y:220},
+                {id: "ry", kind: "read", name: "y", x:60, y:540},
+                {id: "kd", kind: "key", name: "DOWN", x:60, y:660},
+                {id: "ku", kind: "key", name: "UP", x:60, y:780},
+                {id: "neg1y", kind: "value", x:60, y:880, value:{valueType: "int", value: -1}},
+                {id: "ay", kind: "operator", x:240, y:600, op:"add"},
+                {id: "mly", kind: "operator", x:240, y:780, op:"multiply"},
+                {id: "ay2", kind: "operator", x:420, y:680, op: "add"},
+                {id: "wy", kind: "write", name:"y", x:600, y:680},
+
+                //feed
+                {id: "rx3", kind: "read", name: "x", x:780, y:200},
+                {id: "ry3", kind: "read", name: "y", x:780, y:660},
+                {id: "xy", kind: "xy", x:960, y:440},
+            ],
+        }
+    }
 ];
