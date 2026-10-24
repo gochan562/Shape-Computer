@@ -87,7 +87,7 @@ export const DEMOS: Demo[] = [
             nodes: [
                 {id: "rx", kind: "read", name: "x", x:100, y:200},
                 {id: "one", kind : "value", x: 100, y: 320, value: {valueType:"int", value:1}},
-                {id: "add", kind: "value", x:280,y:260, op:"add"},
+                {id: "add", kind: "operator", x:280,y:260, op:"add"},
                 {id: "wx", kind: "write", name:"x", x:460, y:260},
                 {id: "rx2", kind: "read", name:"x", x:100, y:420},
                 {id: "dx", kind: "display", name: "x", x:280, y:420},

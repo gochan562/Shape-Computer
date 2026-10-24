@@ -2,11 +2,21 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Connection, Ev, Node, Program, Value } from "./types";
-import { COLOR, dia, evaluate, fmt, path, poly, port, star, uid } from "./evaluator";
+import { COLOR, dia, diamond, evaluate, fmt, path, poly, port, star, uid } from "./evaluator";
+import { Runtime, codeToKeyName} from "./runtime"
 import { DEMOS } from "./demos"; // Dont forget to write demos!!!!!!!!!
 
+type PalEntry = {
+  kind: Node["kind"];
+  label: string;
+  glyph: string;
+  op?: "add"|"multiply"|"divide"|"lt"|"gt"|"eq";
+  val?: Value;
+  name?: string;
+};
+
 // Toolbox palette
-const PAL: Array<{ kind: Node["kind"]; label: string; glyph: string; op?: "add" | "multiply" | "divide"; val?: Value }> = [
+const PAL: PalEntry[]= [
   { kind:"value", label: "INT", glyph: "○", val: { valueType: "int", value: 5 } },
   { kind: "value", label:"NUM", glyph: "○", val: { valueType: "number", value: 3.14 } },
   { kind: "value", label:"STR", glyph:"○", val:  { valueType: "string", value: "x" } },
@@ -16,8 +26,46 @@ const PAL: Array<{ kind: Node["kind"]; label: string; glyph: string; op?: "add" 
   { kind: "operator", label: "MUL", glyph: "⬟", op: "multiply" },
   { kind: "operator", label: "DIV", glyph: "★", op: "divide" },
   { kind: "print",label: "PRINT", glyph: "⬢" },
+  { kind: "operator", label: "LT", glyph: "△", op:"lt"},
+  { kind: "operator", label: "GT", glyph: "△", op:"gt"},
+  { kind: "operator", label: "EQ", glyph: "△", op: "eq"},
+  { kind: "if", label: "IF", glyph: "◇"},
+  { kind: "read", label: "READ", glyph: "◍", name: "x"},
+  {kind: "write", label: "WRITE", glyph:"▣", name: "x"},
+  { kind: "key", label: "KEY", glyph: "◉", name: "RIGHT"},
+  { kind: "display", label: "DISP", glyph: "▭", name: "out"},
+  {kind: "xy", label: "XY", glyph: "▣"} //had to use cuz I coudnt find others :(
 ];
 
+
+function opLabel(op?: string): string {
+  if (op==="add") return "+";
+  if (op === "multiply") return "×";
+  if (op ==="divide") return "÷";
+  if (op === "lt") return "<";
+  if (op=== "gt") return ">";
+  if (op === "eq") return "=";
+  return "?";
+
+}
+
+function inputPorts(n: Node): Array<{port: string; x: number; y: number}>{
+  if (n.kind === "operator"){
+    return [{port: "A", ...port(n, "A")}, {port: "B", ...port(n, "B")}];
+  }
+  if (n.kind === "if") {
+    return [{port: "in", ...port(n, "in")}, {port: "A", ...port(n,"A")}, {port: "B", ...port(n,"B")}];
+
+  }
+  if (n.kind === "xy") {
+    return [{port: "A", ...port(n,"A")}, {port: "B", ...port(n, "B")}];
+  }
+
+  if(n.kind === "print" || n.kind === "list" || n.kind === "write" || n.kind === "display"){
+    return [{port:"in", ...port(n, "in")}];
+  }
+  return[];
+}
 export function Machine() {
   const [prog, setProg] =useState<Program>({ nodes: [], conns: [] });
   const [sel, setSel]= useState<string | null>(null);
