@@ -76,10 +76,19 @@ export function Machine() {
   const [outs, setOuts] =useState <Value[]>([]);
   const [errs, setErrs] =  useState<string[]>([]);
   const [running, setRunning] = useState(false);
+  const [looping, setLooping] = useState(false)
+  const [stageTick, setStageTick] = useState(0);
   const [dragConn, setDragConn] = useState<{ from:string; x:number;y: number } | null>(null);
   const [highlightPort,setHighlightPort] = useState<{ id:string; port: string } |null>(null);
+  //gotta zoom them out cuz it's getting messy from hr
+  const [view, setView] = useState({ x:0, y:0, zoom: 1});
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  
   const timer =useRef<ReturnType<typeof setTimeout> | null>(null);
   const svgRef= useRef<SVGSVGElement | null>(null);
+  const rt = useRef<Runtime>(new Runtime());
+  const loopTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   //mutations
   const addNode = (p: typeof  PAL[number], x: number, y: number) => {
@@ -107,8 +116,12 @@ export function Machine() {
   const clear =() => {
     if (!prog.nodes.length) return;
     if (!confirm("CLEAR machine?")) return;
+     // DONT FORGET TO MAKE LOOP FUNCTIONS!!!!!
+    rt.current.reset();
     setProg({ nodes: [], conns: [] });
     setOuts([]); setErrs([]); setActiveNodes(new Set()); setActiveConns(new Set()); setProduced({}); setSel(null);
+    setView({x:0, y:0, zoom:1});
+    setStageTick(t => t+1);
   };
   const loadDemo = (id: string) => {
     const d = DEMOS.find((x) => x.id === id);
@@ -121,7 +134,8 @@ export function Machine() {
   };
   const setValue = (id: string, v: Value) =>
     setProg((s) => ({ ...s, nodes: s.nodes.map((n) => (n.id === id ? { ...n, value: v } : n)) }));
-
+  const setName = (id: string, name: string) =>
+    setProg((s) => ({...s, nodes: s.nodes.map((n) => (n.id === id ? {...n, name}:n))}));
   // ruun!
   const run = () =>{
     if (timer.current) clearTimeout(timer.current);
@@ -151,7 +165,64 @@ export function Machine() {
     };
     timer.current = setTimeout(tick, 50);
   };
+
+  //loops and reset
+
+  const startLoop = () => {
+    stopLoop();
+    setLooping(true);
+    setActiveNodes(new Set());
+    setActiveConns(new Set());
+    setOuts([]);
+    setErrs([]);
+    loopTimer.current = setInterval (() => {
+      const r = rt.current.tick(prog);
+      setStageTick(t => t+1);
+      const aN = new Set<string>();
+      const aC = new Set<string>();
+      for (const e of r.evs) {
+        if (e.type=== "node") aN.add(e.id);
+        if (e.type === "conn") aC.add(e.id);
+      }
+      setActiveNodes(aN); setActiveConns(aC);
+      setProduced({...r.produced});
+      if (r.errs.length) setErrs(r.errs);
+    }, 200);
+  };
+
+  const stopLoop = () => {
+    if (loopTimer.current) {clearInterval (loopTimer.current); loopTimer.current=null;}
+    setLooping(false);
+    setActiveNodes(new Set()); setActiveConns(new Set());
+
+  };
+  const reset = () => {
+    rt.current.reset();
+    setOuts([]); setErrs([]); setActiveNodes(new Set()); setActiveConns(new Set()); setProduced({});
+    setStageTick(t => t+1);
+  }
+
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+
+  
+  //wheel zooom
+  useEffect (() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const rect = svg.getBoundingClientRect();
+      if (!rect) return;
+      const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      const v = viewRef.current;
+      const cx = (mx - v.x)/v.zoom, cy = (my-v.y)/v.zoom;
+      const factor = e.deltaY<0 ? 1.1 : 1 / 1.1;
+      const newZoom = Math.max(0.25, Math.min(4, v.zoom*factor));
+      setView({ zoom: newZoom, x: mx - cx * newZoom, y: my - cy * newZoom });
+    };
+    svg.addEventListener("wheel", onWheel, {passive: false});
+    return () => svg.removeEventListener("wheel", onWheel);
+  },[]);
 
   // delete using keyboard
   useEffect(() => {
