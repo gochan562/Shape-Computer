@@ -116,7 +116,7 @@ export function Machine() {
   const clear =() => {
     if (!prog.nodes.length) return;
     if (!confirm("CLEAR machine?")) return;
-     // DONT FORGET TO MAKE LOOP FUNCTIONS!!!!!
+    stopLoop();
     rt.current.reset();
     setProg({ nodes: [], conns: [] });
     setOuts([]); setErrs([]); setActiveNodes(new Set()); setActiveConns(new Set()); setProduced({}); setSel(null);
@@ -142,6 +142,7 @@ export function Machine() {
     setActiveNodes(new Set()); setActiveConns(new Set()); setProduced({});
     setOuts([]); setErrs([]); setRunning(true);
     const r=  evaluate(prog);
+    setStageTick(t => t+1);
     if (!r.evs.length) { setRunning(false); if (r.errs.length) setErrs(r.errs); return; }
     let i = 0;
     const aN = new Set<string>(), aC = new Set<string>();
@@ -202,7 +203,7 @@ export function Machine() {
     setStageTick(t => t+1);
   }
 
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  useEffect(() => () => {if (timer.current) clearTimeout(timer.current); }, []);
 
   
   //wheel zooom
@@ -237,9 +238,25 @@ export function Machine() {
         }
       } else if (e.key === "Escape") setSel(null);
       else if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); run(); }
+      const kn = codeToKeyName(e.code);
+      if (kn) {
+        e.preventDefault();
+        rt.current.setKey(kn, true);
+        setStageTick( t => t+1);
+      }
+    };
+
+    //new key detecte
+    const onUp = (e: KeyboardEvent) => {
+      const kn = codeToKeyName(e.code);
+      if (kn) {
+        rt.current.setKey(kn, false);
+        setStageTick(t=>1+t);
+      }
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("keyup", onUp);
+    return () => {window.removeEventListener("keydown", onKey); window.removeEventListener("keyup", onUp)};
   }, [sel, prog]);
 
   const toCanvas = (cx: number, cy: number) => {
