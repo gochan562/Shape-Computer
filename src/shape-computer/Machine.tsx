@@ -261,7 +261,8 @@ export function Machine() {
 
   const toCanvas = (cx: number, cy: number) => {
     const r = svgRef.current?.getBoundingClientRect();
-    return { x: cx - (r?.left ?? 0), y: cy - (r?.top ?? 0) };
+    const v = viewRef.current;
+    return { x: cx - (r?.left ?? 0) -v.x, y: (cy - (r?.top ?? 0)- v.y) / v.zoom};
   };
   const startNodeDrag = (id: string, e: React.MouseEvent) => {
     if (e.button !== 0) return;
@@ -289,11 +290,8 @@ export function Machine() {
       //  hit-test
       let near: { id: string; port: string } | null = null;
       for (const n of prog.nodes) {
-        const ports: Array<{ port: string; x: number; y: number }> =
-          n.kind === "operator"
-            ? [{ port: "A", ...port(n, "A") }, { port: "B", ...port(n, "B") }]
-            : (n.kind === "print" || n.kind === "list") ? [{ port: "in", ...port(n, "in") }] : [];
-        for (const pp of ports) {
+        if (n.id === id) continue;
+        for (const pp of inputPorts(n)) {
           const dx = pp.x - cp.x, dy = pp.y - cp.y;
           if (Math.sqrt(dx * dx + dy * dy) < 24) near = { id: n.id, port: pp.port };
         }
@@ -317,6 +315,29 @@ export function Machine() {
     };
     window.addEventListener("mousemove", move); window.addEventListener("mouseup", up);
   };
+
+  //panning
+
+  const onCanvasMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    const tgt = e.target as Element;
+    if (tgt.tagName !== "svg" && tgt.id !== "mc-bg") return;
+    setSel(null);
+    let lastX = e.clientX, lastY = e.clientY;
+    const move = (ev: MouseEvent) => {
+      const dx = ev.clientX-lastX, dy = ev.clientY- lastY;
+      lastX = ev.clientX;
+      lastY = ev.clientY;
+      const v = viewRef.current;
+      setView({...v, x: v.x+dx, y: v.y+dy});
+    };
+
+    const up = () => {window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", up);
+      window.addEventListener("mousemove", move);
+      window.addEventListener("mouseup", up) ;
+    }
+  }
 
   const editing= prog.nodes.find((n) => n.id=== editId);
 
