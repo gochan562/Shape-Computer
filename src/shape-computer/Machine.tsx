@@ -340,6 +340,11 @@ export function Machine() {
   }
 
   const editing= prog.nodes.find((n) => n.id=== editId);
+  void stageTick;
+  const stateSnap = rt.current.stateSnapshot();
+  const displaySnap: Array<{ name: string; value: Value}> = Array.from(rt.current.displays.entries()).map(([name,value]) => ({name,value}));
+  const xyPos = rt.current.xy;
+  const heldKeys = Array.from(rt.current.inputs);
 
   return (
     <div className="mc">
@@ -350,8 +355,9 @@ export function Machine() {
         {DEMOS.map((d) => (
           <button key={d.id} className="mc-btn mc-btn-ghost" onClick={() => loadDemo(d.id)} title={d.name}>{d.name}</button>
         ))}
-        <button className="mc-btn mc-btn-warn" onClick={clear} disabled={running}>CLEAR</button>
-        <button className="mc-btn mc-btn-go" onClick={run} disabled={running}>{running ? "..." : "RUN"}</button>
+        <button className="mc-btn mc-btn-warn" onClick={clear} disabled={running || looping}>CLR</button>
+        <button className="mc-btn mc-btn-warn" onClick ={reset} disabled={running}>RESET</button>
+        <button className="mc-btn mc-btn-ghost" onClick={running ? undefined: run} disabled={running||looping}>{running ? "..." : "RUN"}</button>
       </header>
 
       <div className="mc-main">
@@ -375,6 +381,13 @@ export function Machine() {
             <div className="mc-leg"><i style={{ background: COLOR.number }} /> NUM</div>
             <div className="mc-leg"><i style={{ background: COLOR.string }} />STR</div>
             <div className="mc-leg"><i style={{ background: COLOR.list }} />LIST </div>
+            <div className= "mc-leg"><i style={{ background: COLOR.read}}/>READ</div>
+            <div className="mc-leg"><i style={{ background: COLOR.write }} /> WRITE</div>
+            <div className="mc-leg"><i style= {{background: COLOR.key}}/>KEY</div>
+            <div className="mc-leg"><i style={{background: COLOR.if}}/>IF</div>
+            <div className="mc-leg"><i style={{background: COLOR.display}}/>DISP</div>
+            <div className="mc-leg"><i style={{background: COLOR.xy}}/>XY</div>
+
           </div>
         </aside>
 
@@ -382,6 +395,7 @@ export function Machine() {
           <svg
             ref={svgRef}
             className="mc-canvas"
+            onMouseDown = {onCanvasMouseDown}
             onClick={() => setSel(null)}
             onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }}
             onDrop={(e) => {
@@ -402,7 +416,8 @@ export function Machine() {
                 <path d= "M0,0 L6,3 L0,6 z" fill={COLOR.connActive} />
               </marker>
             </defs>
-            
+
+          <g transform={`translate(${view.x}, ${view.y})scale(${view.zoom})`}>
             {/* connections */}
             {prog.conns.map((c) => {
               const f = prog.nodes.find((n) => n.id === c.from);
@@ -443,9 +458,16 @@ export function Machine() {
               const pv = produced[n.id];
 
               const v = pv ?? n.value;
-              const stroke = n.kind === "value" || n.kind === "list"
-                ? (v ? COLOR[v.valueType] : COLOR.op)
-                : COLOR.op;
+              const stroke = 
+                n.kind === "value" || n.kind === "list"
+                  ? (v ? COLOR[v.valueType] : COLOR.op)
+                  : n.kind === "read" ? COLOR.read
+                  : n.kind === "write"? COLOR.write
+                  : n.kind === "key" ? COLOR.key
+                  : n.kind === "if"? COLOR.if
+                  : n.kind === "display"? COLOR.display
+                  : n.kind=== "xy"? COLOR.xy
+                  : COLOR.op;
               return  (
                 <g key={n.id} transform={`translate(${n.x},${n.y})`} className={`mc-node ${isSel ? "is-sel" : ""} ${isAct ? "is-active" : ""}`}>
                   {isAct && <circle r={40} fill="none" stroke={stroke} strokeWidth="0.6" opacity="0.5" className="mc-halo" />}
@@ -474,6 +496,37 @@ export function Machine() {
                         <circle cx={-w / 2} cy={0} r="6" fill="#08131f" stroke={COLOR.list} strokeWidth="1.5" className="mc-port"
                           onMouseDown={(e) => e.stopPropagation()} />
                         <circle cx={w / 2} cy={0} r="6" fill="#08131f" stroke={COLOR.list} strokeWidth="1.5" className="mc-port" onMouseDown={(e) => startConn(n.id, e)} />
+                      </>
+                    );
+                  })()}
+
+                  {n.kind === "read"&& (()=> {
+                    const cv = rt.current.readVar(n.name ?? "_");
+                    const r = dia(cv)/2;
+                    return (
+                      <>
+                        <circle r={r} fill={stroke} stroke={isSel ? "#fff" : stroke} strokeWidth={isSel ? 2 : 1} opacity="0.95"
+                          onMouseDown= {(e)=> startNodeDrag(n.id,e)}
+                          onDoubleClick={() => setEditId(n.id)}/>
+                        <text textAnchor="middle" dy="-0.1em" className="mc-label-sm" fill="#08131f">{n.name ?? "_"}</text>
+                        <text textAnchor="middle" dy="1em" className="mc-label" fill="#08131f">{fmt(cv)}</text>
+                        <circle cx={r} cy={0} r="6" fill="#08131f" stroke={stroke} strokeWidth="1.5" className="mc-port" onMouseDown={(e) => startConn(n.id, e)} />
+                      </>
+                    );
+                  })()}
+
+                  {n.kind === "key" && (() => {
+                    const pressed = rt.current.isKey((n.name ?? "").toUpperCase());
+                    const r = 18;
+                    return (
+                      <>
+                        <circle r={r} fill={pressed ? stroke: "#0d1626"} stroke={isSel ? "#fff" : stroke} strokeWidth={isSel ? 2:1.5} opacity={pressed ? 0.95 : 0.6}
+                          onMouseDown={(e) => startNodeDrag(n.id, e)}
+                          onDoubleClick={() => setEditId(n.id)} />
+                        <text textAnchor="middle" dy="-0.1em" className ="mc-label-sm" fill={pressed ? "#08131f" : stroke}>{(n.name ?? "?").slice(0, 5)}</text>
+                        <text textAnchor ="middle"dy="1em" className= "mc-label" fill={pressed ? "#08131f" : stroke}> {pressed ? "1" : "0"}</text>
+                        <circle cx={r} cy= {0} r="6" fill= "#08131f" stroke={stroke} strokeWidth ="1.5"  className= "mc-port" onMouseDown={(e) => startConn( n.id, e) } />
+
                       </>
                     );
                   })()}
@@ -527,6 +580,7 @@ export function Machine() {
 
               );
             })}
+          </g>
           </svg>
         </div>
 
