@@ -560,6 +560,89 @@ export function Machine() {
                     );
                   })()}
 
+                  {n.kind === "if" && (() => {
+                    const h = 32;
+                    const pts = diamond(h);
+                    const iP = port(n, "in")m, aP = port(n, "A"), bP = port(n, "B"), oP = port(n, "out");
+                    return (
+                      <>
+                        <polygon points={pts} fill = "#0d1626" stroke={isSel ? "#fff" : COLOR.if} strokeWidth={isSel ? 2 : 1.25}
+                          onMouseDown={(e) => startNodeDrag(n.id, e)} />
+                        <text textAnchor="middle" dy="0.35em" className="mc-label-sm" fill={COLOR.if}>IF</text>
+                        {pv && (
+                          <g transform={`translate(${h+18},0)`}>
+                            <circle r={dia(pv) / 2} fill={COLOR[pv.valueType]} stroke={COLOR[pv.valueType]} strokeWidth="1" opacity="0.95" className="mc-produced" />
+                            <text textAnchor="middle" dy="0.35em" className="mc-label" fill="#08131f">{fmt(pv)}</text>
+
+                          </g>
+                        )}
+                          <circle cx= {iP.x, n.x} cy={iP.y - n.y} r = "6" fill ="#08131f" stroke={COLOR.if} strokeWidth="1.5"
+                            className={`mc-port ${highlightPort?.id === n.id && highlightPort.port ==="in" ? "is-hot" : ""}`} onMouseDown={(e) => e.stopPropagation()} />
+                          <circle cx={aP.x - n.x} cy={aP.y - n.y} r="6" fill="#08131f" stroke= {COLOR.if} strokeWidth="1.5"
+                            className={`mc-port ${highlightPort?.id === n.id && highlightPort.port=== "A"? "is-hot" : ""}`} onMouseDown={(e) => e.stopPropagation()} />
+                          <circle cx={bP.x - n.x} cy={bP.y - n.y} r="6" fill = "#08131f" xtroke={COLOR.if} strokeWidth="1.5"
+                            className={`mc-port${highlightPort?.id === n.id && highlightPort.port==="B" ? "is-hot":""}`} onMouseDown={(e) => e.stopPropagation()} />
+                          <circle cx={oP.x - n.x} cy={oP.y - n.y} r="6" fill="#08131f" stroke={COLOR.if} strokeWidth="1.5" className="mc-port" onMouseDown={(e) => startConn(n.id, e)} />
+                          
+                      </>
+                    );
+                  })()}
+                  {/*btw most are template codes so I just copy paste them... is it fine? */}
+                  {n.kind === "write" && (() => {
+                    const h = 32;
+                    const pts = poly(5,h);
+                    const iP = port(n, "in");
+                    return (
+                      <>
+                        <polygon points={pts} fill="#0d1626" stroke={isSel ? "#fff" : COLOR.write} strokeWidth={isSel ? 2 : 1.25}
+                          onMouseDown={(e) => startNodeDrag(n.id, e)}
+                          onDoubleClick={()=> setEditId(n.id)}/>
+                        <text textAnchor="middle" dy="-0.1em" className="mc-label-sm" fill={COLOR.write}>WRITE</text>
+                        <text textAnchor="middle" dy="1em" className="mc-label" fill={COLOR.write}>{n.name ?? "_"}</text>
+                        <circle cx={iP.x - n.x} cy={iP.y - n.y} r="6" fill="#08131f" stroke={COLOR.write} strokeWidth="1.5"
+                          className={`mc-port ${highlightPort?.id === n.id && highlightPort.port === "in" ? "is-hot" : ""}`} onMouseDown={(e) => e.stopPropagation()} />
+
+                      </>
+                    );
+                  })()}
+
+
+                  {n.kind === "display"&& (() => {
+                    const w = 70, h = 32;
+                    const iP =port(n, "in");
+                    const cv = rt.current.displays.get(n.name ?? "_");
+                    return (
+                      <>
+                        <rect x={-w/2} y={-h/2} width ={w} height={h} rx ="1" fill = "#0d1626" stroke={isSel ? "#fff" : COLOR.display} strokeWidth={isSel ? 1.5 : 1}
+                          onMouseDown={(e) => startNodeDrag(n.id, e)}
+                          onDoubleClick={() => setEditId(n.id)} />
+                        <text textAnchor="middle" dy="-0.15em" className="mc-label-sm" fill={COLOR.display}>DISP</text>
+                        <text textAnchor="middle" dy="1em" className="mc-label" fill={COLOR.display}>{cv ? fmt(cv) : "-"}</text>
+                        <circle cx={iP.x - n.x} cy={iP.y - n.y} r="6" fill="#08131f" stroke={COLOR.display} strokeWidth="1.5"
+                          className={`mc-port ${highlightPort?.id === n.id && highlightPort.port === "in" ? "is-hot" : ""}`} onMouseDown={(e) => e.stopPropagation()} />
+                      </>
+                    );
+                  })()}
+
+                  {n.kind === "xy" && (() => {
+                    const h = 32;
+                    const aP = port(n, "A"), bP=port(n, "B");
+                    return (
+                      <>
+                        <rect x ={-h} y ={-h} width={h*2} rx="1" fill="#0d1626" stroke={isSel ? "#fff" : COLOR.xy} strokeWidth={isSel ? 1.5 : 1.25}
+                          onMouseDown={(e) => startNodeDrag(n.id, e)} />
+                        <text textAnchor="middle" dy="-0.1em" className="mc-label-sm" fill={COLOR.xy}>XY</text>
+                        {xyPos && <text textAnchor= "middle" dy="1em" className="mc-label" fill={COLOR.xy}>{Math.round(xyPos.x)}, {Math.round(xyPos.y)}</text>}
+                        <circle cx={aP.x - n.x} cy={aP.y - n.y} r="6" fill="#08131f" stroke={COLOR.xy} strokeWidth="1.5" 
+                          className={`mc-port ${highlightPort?.id === n.id && highlightPort.port === "A" ? "is-hot" : ""}`} onMouseDown={(e) => e.stopPropagation()} />
+                        <circle cx={bP.x - n.x} cy={bP.y - n.y} r="6" fill="#08131f" stroke={COLOR.xy} strokeWidth="1.5"
+                          className={`mc-port ${highlightPort?.id === n.id && highlightPort.port === "B" ? "is-hot" : ""}`} onMouseDown={(e) => e.stopPropagation()} />
+
+                        
+                      </>
+                    );
+                  })()}
+
                   {n.kind === "print" && (() => {
                     const h = 32;
                     const pts = poly(6, h * 1.1, 0);
@@ -585,6 +668,10 @@ export function Machine() {
         </div>
 
       </div>
+
+      {/*some more butttons hr*/}
+      
+      
 
       {/* style */}
       <footer className="mc-out">
