@@ -580,7 +580,7 @@ export function Machine() {
                             className={`mc-port ${highlightPort?.id === n.id && highlightPort.port ==="in" ? "is-hot" : ""}`} onMouseDown={(e) => e.stopPropagation()} />
                           <circle cx={aP.x - n.x} cy={aP.y - n.y} r="6" fill="#08131f" stroke= {COLOR.if} strokeWidth="1.5"
                             className={`mc-port ${highlightPort?.id === n.id && highlightPort.port=== "A"? "is-hot" : ""}`} onMouseDown={(e) => e.stopPropagation()} />
-                          <circle cx={bP.x - n.x} cy={bP.y - n.y} r="6" fill = "#08131f" xtroke={COLOR.if} strokeWidth="1.5"
+                          <circle cx={bP.x - n.x} cy={bP.y - n.y} r="6" fill = "#08131f" stroke={COLOR.if} strokeWidth="1.5"
                             className={`mc-port${highlightPort?.id === n.id && highlightPort.port==="B" ? "is-hot":""}`} onMouseDown={(e) => e.stopPropagation()} />
                           <circle cx={oP.x - n.x} cy={oP.y - n.y} r="6" fill="#08131f" stroke={COLOR.if} strokeWidth="1.5" className="mc-port" onMouseDown={(e) => startConn(n.id, e)} />
                           
@@ -669,9 +669,59 @@ export function Machine() {
 
       </div>
 
-      {/*some more butttons hr*/}
+      {/*some more sections hr*/}
       
-      
+      <aside className="mc-stage">
+        <div className="mc-stage-hdr">STAGE</div>
+        <div className="mc-stage-sec">
+          <div className="mc-stage-sub">STATE</div>
+          {Object.entries(stateSnap).length=== 0
+            ?<div className="mc-stage-empty">-</div>
+            : Object.entries(stateSnap).map(([k,v]) => (
+              <div key={k} className="mc-stage-row">
+                <span className="me-stage-k">{k}</span>
+                <span className= "mc-stage-v" style= {{color:COLOR[v.valueType]}}>{fmt(v)}</span>
+              </div>
+            ))}
+        </div>
+
+        <div className="mc-stage-sec">
+          <div className= "mc-stage-sub">DISPLAY</div>
+          {displaySnap.length ===0
+            ?<div className="mc-stage-empty">-</div>
+            :displaySnap.map(({name, value}) => (
+              <div key= {name} className="mc-stage-row">
+                <span className="mc-stage-k">{name}</span>
+                <span className="mc-stage-v" style= {{color: COLOR[value.valueType]}}>{fmt(value)}</span>
+              </div>
+            ))
+          }
+        </div>
+        <div className="mc-stage-sec">
+          <div className="mc-stage-sub">XY</div>
+          <div className="mc-xy-pad">
+            {xyPos ? (
+              <div className="mc-xy-dot" style= {{
+                left: `${Math.max(0, Math.min(100, ((xyPos.x + 50) / 100) * 100))}%`,
+                top:  `${Math.max(0, Math.min(100, ((-xyPos.y + 50) / 100) * 100))}%`,
+              }}/>
+            ): <div className="mc-stage-empty">-</div>}
+          </div>
+        </div>
+
+        <div className="mc-stage-sec">
+          <div className="mc-stage-sub">KEYS</div>
+          {heldKeys.length === 0 
+            ? <div className="mc-stage-empty">-</div>
+            : heldKeys.map((k) => (
+              <div key={k} className="mc-stage-row">
+                <span className="mc-stage-k">{k}</span>
+                <span className="mc-stage-v" style= {{color: COLOR.ley}}>1</span>
+              </div>
+            ))
+          }
+        </div>
+      </aside>
 
       {/* style */}
       <footer className="mc-out">
@@ -684,6 +734,41 @@ export function Machine() {
           <span key={i} className="mc-out-err">{m}</span>
         ))}
       </footer>
+
+      {editing && (
+        <div className="mc-edit" onMouseDown={()=> setEditId(null)}>
+          <form className="mc-edit-form" onMouseDown={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); setEditId(null); }}>
+            <div className="mc-edit-hdr">EDIT {editing.kind.toUpperCase()}</div>
+            {(editing.kind === "read" || editing.kind === "write" || editing.kind === "key" || editing.kind === "display") &&(
+              <div className="mc-edit-row">
+                <label>NAME</label>
+                <input autoFocus className="mc-edit-input" type="text"
+                  defaultValue={editing.name ?? ""}
+                  onKeyDown={(e) => setName(editing.id, e.target.value.toUpperCase())}
+                />
+                {editing.kind === "key" && (
+                  <div className="mc-edit-hint">arrows / space ~~ LEFT, RIGHT, UP, DOWN, SPACE</div>
+                )}
+              </div>
+            )}
+            {(editing.kind === "value" || editing.kind === "list") && (
+              <>
+              <label>TYPE</label>
+              <div className="mc-edit-types">
+                {(["int", "number", "string", "list"] as const).map ((t) => (
+                  <button key={t} type="button" className={`mc-edit-type ${editing.value?.valueType === t ? "is-on" : ""}`} style={{ borderColor: editing.value?.valueType === t ? COLOR[t] : undefined }}
+                    onClick={() =>{
+                      if (t === "list") setValue(editing.id, {valueType: "list", items: editing.value?.valueType ==="list"? editing.value.items: [{valueType: "int", value: 1}]});
+                      
+                    }}
+                ))}
+              </div>
+              </>
+            )}
+          </form>
+          
+          
+      )}
 
       {/* pPrimitive  value editor*/}
       {editing && (editing.kind === "value" || editing.kind === "list") && (
